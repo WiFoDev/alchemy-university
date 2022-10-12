@@ -10,6 +10,7 @@ export const Layout = ({children}) => {
   </Head>
 
   <main className={styles.main}>
+    <h1 className={styles.title}>Buy WiFo A Coffee!</h1>
     {children}
   </main>
 
