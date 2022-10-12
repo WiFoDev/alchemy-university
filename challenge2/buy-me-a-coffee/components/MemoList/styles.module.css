@@ -7,5 +7,12 @@
 .list {
   margin: 0;
   padding: 0;
+  width: 80%;
+  margin-top: 2rem;
   list-style: none;
+  display: grid;
+  align-items: center;
+  gap: 2rem;
+  grid-auto-rows: 8rem;
+  grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
 }

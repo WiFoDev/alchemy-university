@@ -1,3 +1,4 @@
+import { MemoItem } from '../MemoItem'
 import styles from './styles.module.css'
 
 export const MemoList = ({memos}) => {
@@ -7,10 +8,7 @@ export const MemoList = ({memos}) => {
       <ul className={styles.list}>
         {
           memos.map((memo) => {
-            return <li key={memo.timestamp}>
-              <p>{`"${memo.message}"`}</p>
-              <p>From: {memo.name} at {memo.timestamp.toLocaleString()}</p>
-            </li>
+            return <MemoItem key={memo.timestamp} {...memo} />
           })
         }
       </ul>
