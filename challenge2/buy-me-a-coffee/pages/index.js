@@ -69,10 +69,38 @@ export default function Home() {
     }
   }
 
+  const onNewMemo = (from, timestamp, name, message) =>{
+    console.log(`Memo received: ${from} | ${timestamp} | ${name} | ${message}`)
+    const newMemo = {
+      from,
+      timestamp: new Date(timestamp * 1000),
+      name,
+      message
+    }
+    setMemos((prevMemos) => {
+      return [
+        ...prevMemos,
+        newMemo
+      ]
+    })
+  }
+
   useEffect(()=> {
+    let buyMeACoffeeContract;
+
     if(!web3ProviderRef.current){
       connectWallet()
       getMemos()
+    }
+    buyMeACoffeeContract = new Contract(address,abi,web3ProviderRef.current)
+    console.log("Setting up Listener")
+    buyMeACoffeeContract.on("NewMemo", onNewMemo)
+
+    return () => {
+      if (buyMeACoffeeContract) {
+        console.log("Removing the Listener")
+        buyMeACoffeeContract.off("NewMemo", onNewMemo)
+      }
     }
   }, [])
 
