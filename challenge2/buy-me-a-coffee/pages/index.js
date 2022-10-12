@@ -4,12 +4,14 @@ import { useState,useEffect, useRef} from 'react'
 import { providers, Contract, utils } from 'ethers'
 import contractData from '../utils/BuyMeACoffee.json'
 import styles from '../styles/Home.module.css'
+import { MemoList } from '../components/MemoList'
 
 
 const {address, abi} = contractData
 
 export default function Home() {
   const [isConnected, setConnected] = useState(false);
+  const [memos, setMemos] = useState([])
   const web3ProviderRef = useRef(null)
 
   const connectWallet = async () => {
@@ -44,18 +46,45 @@ export default function Home() {
     }
   }
 
+  const getMemos = async () => {
+    try{
+      const buyMeACoffeeContract = new Contract(address,abi,web3ProviderRef.current)
+      console.log('Fetching memos...')
+      const memosFromContract = await buyMeACoffeeContract.getMemos();
+      console.log('Memos Fetched')
+      const newMemos = memosFromContract.map(memo => {
+        const [from, timestamp, name, message] = memo
+        const newTime = new Date(timestamp * 1000)
+        const newMemo = {
+          from,
+          timestamp: newTime,
+          name,
+          message
+        }
+        return newMemo
+      })
+      setMemos(newMemos)
+    } catch {
+      console.error('Could not fetch memos')
+    }
+  }
+
   useEffect(()=> {
     if(!web3ProviderRef.current){
       connectWallet()
+      getMemos()
     }
   }, [])
 
   return (
     <Layout >
       {isConnected &&
-        <TipForm 
-          buyMeACoffee={buyMeACoffee}
-        />
+        <>
+          <TipForm 
+            buyMeACoffee={buyMeACoffee}
+          />
+          <MemoList memos={memos} />
+        </>
       }
       {
         !isConnected && <button onClick={()=>connectWallet()} className={styles.button}>Connect Wallet</button>
