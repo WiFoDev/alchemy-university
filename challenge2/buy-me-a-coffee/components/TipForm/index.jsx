@@ -27,15 +27,21 @@ export const TipForm = ({buyMeACoffee}) => {
     })
   }
 
-  const handleSubmit = async (e) => {
+  const handleSmallCoffee = async (e) => {
     e.preventDefault()
-    await buyMeACoffee(userInputs)
+    await buyMeACoffee(userInputs,'0.001')
+    setUserInputs(INITIAL_INPUTS_STATE)
+  }
+
+  const handleLargeCoffee = async (e) => {
+    e.preventDefault()
+    await buyMeACoffee(userInputs,'0.003')
     setUserInputs(INITIAL_INPUTS_STATE)
   }
 
   return (
   <section className={styles.section}>
-    <form onSubmit={handleSubmit} className={styles.form}>
+    <form className={styles.form}>
       <div className={styles.inputContainer}>  
         <label htmlFor="name">Name</label>
         <input onChange={handleNameChange} value={userInputs.name} id="name" type='text' placeholder='Enter your name...' />
@@ -44,7 +50,8 @@ export const TipForm = ({buyMeACoffee}) => {
         <label htmlFor="message">Message</label>
         <textarea onChange={handleMessageChange} value={userInputs.message} id="message" placeholder='Enjoy your coffee'></textarea>
       </div>
-      <button className={styles.button}>Send 1 Coffee for 0.001ETH</button>
+      <button onClick={handleSmallCoffee} className={styles.button} type='submit'>Send 1 Coffee for 0.001ETH</button>
+      <button onClick={handleLargeCoffee} className={styles.button} type='submit'>Send Large Coffee for 0.003ETH</button>
     </form>
   </section>
   )

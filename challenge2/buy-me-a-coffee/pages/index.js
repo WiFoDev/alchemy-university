@@ -27,7 +27,7 @@ export default function Home() {
     setConnected(true)                                                    
   }
   
-  const buyMeACoffee = async (userInputs) => {
+  const buyMeACoffee = async (userInputs,amount) => {
     try{
       const signer = web3ProviderRef.current.getSigner()
       const buyMeACoffeeContract = new Contract(address,abi,signer)
@@ -36,7 +36,7 @@ export default function Home() {
       const Tx = await buyMeACoffeeContract.buyACoffee(
         name.trim() !== ''? name : 'Anon',
         message.trim() !== '' ? message: 'Enjoy Your Coffee',
-        {value: utils.parseEther('0.001')}
+        {value: utils.parseEther(amount)}
       )
       await Tx.wait()
       console.log(`Mined at ${Tx.hash}`)
