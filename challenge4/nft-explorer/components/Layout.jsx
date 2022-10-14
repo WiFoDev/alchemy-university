@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import React from 'react'
 
-export const Layout = () => {
+export const Layout = ({ children }) => {
   return (
     <div className='min-h-screen grid'>
       <Head>
@@ -11,7 +11,7 @@ export const Layout = () => {
       </Head>
 
       <main className="h-full px-12">
-        <section className="border-2 h-1/3">form</section>
+        {children}
         <section className="border-2">Galery</section>
       </main>
     </div>
