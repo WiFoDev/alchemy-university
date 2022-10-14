@@ -15,20 +15,72 @@ contract ChainBattles is ERC721URIStorage {
 
     constructor() ERC721("Chain Battles", "CBTLS") {}
 
-    function generateCharacter(uint _tokenId) public  returns (string memory) {
-      bytes memory svg = abi.encodePacked(
-        '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350">',
-        '<style>.base { fill: white; font-family: serif; font-size: 14px; }</style>',
-        '<rect width="100%" height="100%" fill="black" />',
-        '<text x="50%" y="40%" class="base" dominant-baseline="middle" text-anchor="middle">',"Warrior",'</text>',
-        '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle">', "Levels: ",getLevels(tokenId),'</text>',
-        '</svg>'
-      )
-      return string(
-        abi.encodePacked(
-            "data:image/svg+xml;base64,",
-            Base64.encode(svg)
-        )
-      )
+    function getLevels(uint tokenId) public view returns (string memory) {
+        uint levels = tokenIdLevels[tokenId];
+        return levels.toString();
+    }
+
+    function generateCharacter(uint tokenId)
+        public
+        view
+        returns (string memory)
+    {
+        bytes memory svg = abi.encodePacked(
+            '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350">',
+            "<style>.base { fill: white; font-family: serif; font-size: 14px; }</style>",
+            '<rect width="100%" height="100%" fill="black" />',
+            '<text x="50%" y="40%" class="base" dominant-baseline="middle" text-anchor="middle">',
+            "Warrior",
+            "</text>",
+            '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle">',
+            "Levels: ",
+            getLevels(tokenId),
+            "</text>",
+            "</svg>"
+        );
+        return
+            string(
+                abi.encodePacked(
+                    "data:image/svg+xml;base64,",
+                    Base64.encode(svg)
+                )
+            );
+    }
+
+    function getTokenURI(uint tokenId) public view returns (string memory) {
+        bytes memory metadata = abi.encodePacked(
+            "{",
+            '"name": "Chain Battles #',
+            tokenId.toString(),
+            '",',
+            '"description": "Battles on chain",',
+            '"image": "',
+            generateCharacter(tokenId),
+            '"',
+            "}"
+        );
+
+        return
+            string(
+                abi.encodePacked(
+                    "data:application/json;base64,",
+                    Base64.encode(metadata)
+                )
+            );
+    }
+
+    function mint() public {
+        _tokensId.increment();
+        uint newItemId = _tokensId.current();
+        _safeMint(msg.sender, newItemId);
+        _setTokenURI(newItemId, getTokenURI(newItemId));
+    }
+
+    function train(uint tokenId) public {
+        require(_exists(tokenId), "This token has not been minted");
+        address owner = ownerOf(tokenId);
+        require(msg.sender == owner, "You are not the owner of the NFT");
+        tokenIdLevels[tokenId]++;
+        _setTokenURI(tokenId, getTokenURI(tokenId));
     }
 }
