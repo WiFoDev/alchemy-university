@@ -12,7 +12,6 @@ export const Layout = ({ children }) => {
 
       <main className="h-full px-12">
         {children}
-        <section className="border-2">Galery</section>
       </main>
     </div>
   )
