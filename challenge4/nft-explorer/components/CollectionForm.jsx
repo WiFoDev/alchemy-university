@@ -15,7 +15,7 @@ export const CollectionForm = ({ fetchNFTs, fetchNFTsForCollection }) => {
   }
 
   return (
-    <section className="min-h-[33.33%] grid place-items-center">
+    <section className=" h-96 grid place-items-center">
       <form onSubmit={handleSubmit} className='w-1/2 flex flex-col gap-2 items-center'>
         <input
         className={`bg-[#f1f5f9] w-full p-1 rounded outline-[#92c5fd] ${isWalletInputDisabled ? 'cursor-not-allowed' : ''}`}
