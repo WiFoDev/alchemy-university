@@ -12,7 +12,13 @@ const nextConfig = {
       'api.nikeapenft.xyz',
       'api.elonmusknft.top',
       'api.mercedesnft.xyz',
-      'api.coachnft.xyz'
+      'api.coachnft.xyz',
+      'res.cloudinary.com',
+      'ipfs.a3sprotocol.xyz',
+      'pbs.twimg.com',
+      's4.ax1x.com',
+      'avaxpunks.com',
+      'data.cryptoninjapartners.com'
     ]
   }
 }
