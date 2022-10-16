@@ -23,7 +23,7 @@ export default function Home () {
     const { nfts } = await fetch(endpoint).then(res => res.json())
     setNFTs(nfts)
   }
-  console.log(NFTs)
+
   return (
     <Layout >
       <CollectionForm

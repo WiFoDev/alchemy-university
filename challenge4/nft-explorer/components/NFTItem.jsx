@@ -2,6 +2,7 @@ import React from 'react'
 import iconEth from '../public/icon-ethereum.svg'
 import iconClock from '../public/icon-clock.svg'
 import Image from 'next/image'
+import { EtherScanIcon } from './EtherScanIcon'
 
 export const NFTItem = ({ media, title, contractMetadata, contract }) => {
   const shortAddress = (address) => {
@@ -28,7 +29,7 @@ export const NFTItem = ({ media, title, contractMetadata, contract }) => {
           </div>
         </div>
         <hr className='border-[#2f415b]'/>
-        <p>Contract Address: {shortAddress(contract.address)}</p>
+        <a target='_blank' href={`https://etherscan.io/address/${contract.address}`} className='flex items-center gap-2' rel="noreferrer"><EtherScanIcon /> {shortAddress(contract.address)}</a>
       </div>
   )
 }
