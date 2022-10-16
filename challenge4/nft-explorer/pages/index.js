@@ -8,13 +8,17 @@ const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`
 
 export default function Home () {
   const [NFTs, setNFTs] = useState([])
+  const [nextPage, setNextPage] = useState(null)
+  const [walletOwner, setWalletOwner] = useState(null)
 
   const fetchNFTs = async (owner, collection) => {
+    setWalletOwner(owner)
     let endpoint = `${baseURL}/getNFTs?owner=${owner}`
     if (collection.length) {
       endpoint = `${endpoint}&contractAddresses%5B%5D=${collection}`
     }
-    const { ownedNfts } = await fetch(endpoint).then(res => res.json())
+    const { ownedNfts, pageKey } = await fetch(endpoint).then(res => res.json())
+    setNextPage(pageKey)
     setNFTs(ownedNfts)
   }
 
@@ -24,13 +28,20 @@ export default function Home () {
     setNFTs(nfts)
   }
 
+  const handleChangePage = async () => {
+    const endpoint = `${baseURL}/getNFTs?owner=${walletOwner}&pageKey=${nextPage}`
+    const { ownedNfts, pageKey } = await fetch(endpoint).then(res => res.json())
+    setNextPage(pageKey)
+    setNFTs(ownedNfts)
+  }
+
   return (
     <Layout >
       <CollectionForm
         fetchNFTs={fetchNFTs}
         fetchNFTsForCollection={fetchNFTsForCollection}
       />
-      <NFTList nfts={NFTs}/>
+      <NFTList nfts={NFTs} nextPage={nextPage} changePage={handleChangePage}/>
     </Layout>
   )
 }
