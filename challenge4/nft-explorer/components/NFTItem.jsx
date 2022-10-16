@@ -11,8 +11,10 @@ export const NFTItem = ({ media, title, contractMetadata, contract }) => {
 
   return (
     <div className='min-h-[22rem] p-6  bg-[#14253d] rounded-2xl text-[#8bacda] flex flex-col gap-3 shadow-gray-500 shadow-lg'>
-        <img
+        <Image
           src={media[0].gateway}
+          width='1000'
+          height='1000'
           alt="Some random alt"
           className='rounded-lg'
         />

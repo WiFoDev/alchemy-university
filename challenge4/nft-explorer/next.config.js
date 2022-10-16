@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['img.seadn.io']
+    domains: ['img.seadn.io', 'ipfs.io']
   }
 }
 
