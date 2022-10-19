@@ -58,12 +58,11 @@ contract BullBear is
         (
             ,
             /*uint80 roundID*/
-            int price, /*uint startedAt*/
+            int price, /*uint startedAt*/ /*uint timeStamp*/
             ,
             ,
 
-        ) = /*uint timeStamp*/
-            /*uint80 answeredInRound*/
+        ) = /*uint80 answeredInRound*/
             pricefeed.latestRoundData();
         return price;
     }
@@ -108,7 +107,14 @@ contract BullBear is
             if (latestPrice < currentPrice) {
                 console.log("ITS BEAR TIME");
                 updateAllTokensURI("bear");
+            } else {
+                console.log("ITS BULL TIME");
+                updateAllTokensURI("bull");
             }
+            currentPrice = latestPrice;
+        } else {
+            console.log("INTERVAL NOT UP!");
+            return;
         }
     }
 
