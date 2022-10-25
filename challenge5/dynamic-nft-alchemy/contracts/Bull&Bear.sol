@@ -10,6 +10,8 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@chainlink/contracts/src/v0.8/KeeperCompatible.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 import "hardhat/console.sol";
 
@@ -18,17 +20,32 @@ contract BullBear is
     ERC721Enumerable,
     ERC721URIStorage,
     Ownable,
-    KeeperCompatibleInterface
+    KeeperCompatibleInterface,
+    VRFConsumerBaseV2
 {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
     AggregatorV3Interface public pricefeed;
+    VRFCoordinatorV2Interface public COORDINATOR;
+
+    uint[] public s_randomWords;
+    uint public s_requestId;
+    uint32 public callbackGasLimit = 500000;
+    uint64 public s_subscriptionId;
+    bytes32 keyhash =
+        0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15;
 
     uint public interval;
     uint public lastTimeStamp;
 
     int public currentPrice;
+
+    enum MarketTrend {
+        BULL,
+        BEAR
+    }
+    MarketTrend public currentMarketTrend = MarketTrend.BULL;
 
     string[] bullUrisIpfs = [
         "https://ipfs.io/ipfs/QmRXyfi3oNZCubDxiVFre3kLZ8XeGt6pQsnAQRZ7akhSNs?filename=gamer_bull.json",
@@ -43,27 +60,29 @@ contract BullBear is
 
     event TokensUpdate(string marketTrend);
 
-    constructor(uint updateInterval, address _priceFeed)
-        ERC721("Bull&Bear", "BBTK")
-    {
+    constructor(
+        uint updateInterval,
+        address _priceFeed,
+        address _vrfCoordinator
+    ) ERC721("Bull&Bear", "BBTK") VRFConsumerBaseV2(_vrfCoordinator) {
         interval = updateInterval;
         lastTimeStamp = block.timestamp;
 
         pricefeed = AggregatorV3Interface(_priceFeed);
 
         currentPrice = getLatestPrice();
+        COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
     }
 
     function getLatestPrice() public view returns (int) {
         (
             ,
             /*uint80 roundID*/
-            int price, /*uint startedAt*/ /*uint timeStamp*/
+            int price, /*uint startedAt*/ /*uint timeStamp*/ /*uint80 answeredInRound*/
             ,
             ,
 
-        ) = /*uint80 answeredInRound*/
-            pricefeed.latestRoundData();
+        ) = pricefeed.latestRoundData();
         return price;
     }
 
@@ -94,6 +113,18 @@ contract BullBear is
         upkeepNeeded = (block.timestamp - lastTimeStamp) > interval;
     }
 
+    function requestRandomnessForNFTUris() internal {
+        require(s_subscriptionId != 0, "Subscription ID not set");
+        s_requestId = COORDINATOR.requestRandomWords(
+            keyhash,
+            s_subscriptionId,
+            3,
+            callbackGasLimit,
+            1
+        );
+        console.log("Request ID: ", s_requestId);
+    }
+
     function performUpkeep(bytes calldata) external override {
         if ((block.timestamp - lastTimeStamp) > interval) {
             lastTimeStamp = block.timestamp;
@@ -105,12 +136,11 @@ contract BullBear is
             }
 
             if (latestPrice < currentPrice) {
-                console.log("ITS BEAR TIME");
-                updateAllTokensURI("bear");
+                currentMarketTrend = MarketTrend.BEAR;
             } else {
-                console.log("ITS BULL TIME");
-                updateAllTokensURI("bull");
+                currentMarketTrend = MarketTrend.BULL;
             }
+            requestRandomnessForNFTUris();
             currentPrice = latestPrice;
         } else {
             console.log("INTERVAL NOT UP!");
@@ -118,18 +148,26 @@ contract BullBear is
         }
     }
 
-    function updateAllTokensURI(string memory trend) internal {
-        if (compareStrings("bear", trend)) {
-            console.log("UPDATING TOKENS URI WITH ", trend, " trend");
-            for (uint i = 0; i < _tokenIdCounter.current(); i++) {
-                _setTokenURI(i, bearUrisIpfs[0]);
-            }
-        } else {
-            console.log("UPDATING TOKENS URI WITH ", trend, " trend");
-            for (uint i = 0; i < _tokenIdCounter.current(); i++) {
-                _setTokenURI(i, bullUrisIpfs[1]);
-            }
+    function fulfillRandomWords(uint, uint256[] memory randomWords)
+        internal
+        override
+    {
+        s_randomWords = randomWords;
+        console.log("...Fullfilling random words");
+
+        string[] memory urisForTrend = currentMarketTrend == MarketTrend.BULL
+            ? bullUrisIpfs
+            : bearUrisIpfs;
+        uint idx = randomWords[0] % urisForTrend.length;
+
+        for (uint i = 0; i < _tokenIdCounter.current(); i++) {
+            _setTokenURI(i, urisForTrend[idx]);
         }
+
+        string memory trend = currentMarketTrend == MarketTrend.BULL
+            ? "bullish"
+            : "bearish";
+
         emit TokensUpdate(trend);
     }
 
@@ -139,6 +177,18 @@ contract BullBear is
 
     function setInterval(uint256 newInterval) public onlyOwner {
         interval = newInterval;
+    }
+
+    function setSubscriptionId(uint64 _id) public onlyOwner {
+        s_subscriptionId = _id;
+    }
+
+    function setCallbackGasLimit(uint32 maxGas) public onlyOwner {
+        callbackGasLimit = maxGas;
+    }
+
+    function setVrfCoodinator(address _address) public onlyOwner {
+        COORDINATOR = VRFCoordinatorV2Interface(_address);
     }
 
     function compareStrings(string memory a, string memory b)
